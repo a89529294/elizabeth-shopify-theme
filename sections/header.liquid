@@ -58,10 +58,17 @@
                   {% else %}
 
                     <div
+                      x-data="{subMenuButtonHeight:0, subMenuHeight:0}"
+                      x-init="$watch('mainMenu.status', (open)=>{
+                        if (open) $nextTick(() => {
+                          subMenuButtonHeight = $refs.subMenuButton.offsetHeight
+                          subMenuHeight = $refs.subMenu.offsetHeight
+                        })
+                      })"
                       class="bg-white isolate transition-all duration-200"
                       :class="subMenus.status[{{ forloop.index0 }}] ? 'ease-out' : 'ease-in'"
                       :style="{
-                        'max-height': subMenus.status[{{ forloop.index0 }}] ? $refs.subMenu.clientHeight + $refs.subMenuButton.clientHeight + 'px' : $refs.subMenuButton.clientHeight + 'px',
+                        'max-height': subMenus.status[{{ forloop.index0 }}] ? subMenuButtonHeight + subMenuHeight + 'px' : subMenuButtonHeight + 'px',
                         'overflow': 'hidden'
                       }">
                       <button
@@ -98,23 +105,23 @@
       </div>
 
       <!-- DESKTOP MENU -->
-      <nav class="hidden md:flex space-x-10" x-data="{ open: false }">
+      <nav class="hidden md:flex space-x-10" x-data="desktopMenu">
         {% for link in linklists.main-menu.links %}
           {% if link.links.size > 0 %}
 
             <div class="relative">
               <button
-                @click="open = !open"
-                @mouseenter="if (!open) { open = true; $event.target.focus(); }"
-                @keydown.escape="open = false"
+                @click="toggleSubMenu({{ forloop.index0 }})"
+                @mouseenter="if (!subMenusOpen[{{ forloop.index0 }}]) { toggleSubMenu({{ forloop.index0 }}); $event.target.focus(); }"
+                @keydown.escape="subMenusOpen[{{ forloop.index0 }}] = false"
                 type="button"
                 class="inline-flex items-center text-base text-gray-500 gap-2 focus-visible:outline-none focus-visible:text-gray-900">{{ link.title }}
                 {% render 'icon-dropdown' %}
               </button>
 
               <div
-                @click.outside="open = false"
-                x-show="open"
+                @click.outside="subMenusOpen[{{ forloop.index0 }}] = false"
+                x-show="subMenusOpen[{{ forloop.index0 }}]"
                 x-cloak
                 x-transition:enter="transition ease-out duration-300 "
                 x-transition:enter-start="opacity-0 scale-90 lg:translate-x-1/2 lg:left-1/2"
@@ -180,6 +187,15 @@
       },
       reset() {
         this.subMenus.status = Array({{ linklists.main-menu.links.size }}).fill(false)
+      },
+
+    }))
+
+    Alpine.data('desktopMenu', ()=>({
+      subMenusOpen: Array({{ linklists.main-menu.links.size }}).fill(false),
+      toggleSubMenu(index) {
+        this.subMenusOpen = this.subMenusOpen.map((_, i) => i === index ? !this.subMenusOpen[i] : false);
+
       }
     }))
   })
