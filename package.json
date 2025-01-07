@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/application.css --watch"
+    "tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/application.css --watch",
+    "dev": "shopify theme dev"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"
